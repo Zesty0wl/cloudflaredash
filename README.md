@@ -55,7 +55,52 @@ You need:
   the Cloudflare dashboard once and choose a team name and the Free plan.
 - Node.js 22 or later.
 
-### 1. Install
+### With a coding agent
+
+Paste this into Claude Code, Codex, Cursor or any coding agent that can run terminal commands.
+It does the work, and stops to ask you for the few things only you can do: signing in to
+Wrangler, creating two API tokens, and choosing who gets access. The tokens go into gitignored
+files on your machine, never into the chat.
+
+```text
+Deploy cloudflaredash (https://github.com/Zesty0wl/cloudflaredash) to my Cloudflare account.
+Read its README.md first: the "By hand" steps there have the detail behind each step below.
+
+Rules: never ask me to paste an API token into this chat, and never print, log or commit one.
+Tokens go only in the gitignored files named below.
+
+1. Clone the repo, cd into it, and run `npm install` and `npm test`.
+2. Run `npx wrangler whoami`. If Wrangler isn't signed in, ask me to run `npx wrangler login`
+   and wait for me.
+3. Copy wrangler.example.jsonc to wrangler.jsonc. Set "account_id" and vars.ACCOUNT_ID to my
+   account ID from `npx wrangler whoami` (ask me which account if there are several). Ask me
+   which day of the month my Workers Paid subscription renews and set vars.BILLING_ANCHOR_DAY.
+   Ask whether I want a custom domain as well as the workers.dev URL; if I do, uncomment
+   "routes" and set the hostname.
+4. Run `npm run deploy`. If Wrangler asks me to register a workers.dev subdomain, ask me to
+   choose one.
+5. Ask me to create two account API tokens in the Cloudflare dashboard (Manage account >
+   Account API tokens > Create token > Custom token) and save them myself, then wait for me:
+   - Read-only, for the dashboard: Account Analytics, Workers Scripts, D1, Workers KV Storage
+     and Queues, all Read. Copy .dev.vars.example to .dev.vars for me; I paste the token
+     after CF_API_TOKEN= in that file.
+   - Admin, for setup from this machine only: Access: Apps and Policies Edit; Access:
+     Organizations, Identity Providers, and Groups Edit; Workers Scripts Edit. I save it as
+     the only contents of a file named .admin-token in the project folder.
+6. Upload the read-only token as the Worker's secret without printing it:
+   grep '^CF_API_TOKEN=' .dev.vars | cut -d= -f2- | npx wrangler secret put CF_API_TOKEN
+7. Ask me which email addresses (or @domains) should be able to see the dashboard, then run
+   `npm run setup-access -- <those addresses>`. If it says the account has no Zero Trust
+   organisation, ask me to open Zero Trust in the Cloudflare dashboard and choose a team name
+   and the Free plan, then run it again.
+8. Run `npm run deploy` again. Check that `curl -sI <workers.dev URL>/api/usage` redirects to
+   my <team>.cloudflareaccess.com sign-in page. Then give me the URL to open, and tell me that
+   `npm run admins -- add <email>` lets more people in later.
+```
+
+### By hand
+
+#### 1. Install
 
 ```sh
 git clone https://github.com/Zesty0wl/cloudflaredash.git
@@ -76,7 +121,7 @@ Leave the `ACCESS_` values alone; step 4 fills them in.
 
 `wrangler.jsonc` is in `.gitignore`, so your own settings stay out of the repository.
 
-### 2. Deploy
+#### 2. Deploy
 
 ```sh
 npm run deploy
@@ -85,7 +130,7 @@ npm run deploy
 This publishes the Worker at `https://cloudflaredash.<your-subdomain>.workers.dev`. Until Access
 is set up in step 4, the page loads but shows no data.
 
-### 3. Give it a read-only API token
+#### 3. Give it a read-only API token
 
 Create an **account API token** (**Manage account > Account API tokens > Create token >
 Custom token**) with these permissions, all **Read**:
@@ -104,14 +149,15 @@ Then store it as a secret:
 npx wrangler secret put CF_API_TOKEN
 ```
 
-### 4. Put it behind Cloudflare Access
+#### 4. Put it behind Cloudflare Access
 
-**With the setup script.** This needs a second API token, kept on your machine and never given to the Worker,
-with **Access: Apps and Policies: Edit**,
-**Access: Organizations, Identity Providers, and Groups: Edit** and **Workers Scripts: Edit**:
+**With the setup script.** This needs a second account API token, kept on your machine and never
+given to the Worker, with **Access: Apps and Policies: Edit**,
+**Access: Organizations, Identity Providers, and Groups: Edit** and **Workers Scripts: Edit**.
+Save it as the only contents of a file named `.admin-token` in the project folder (git ignores
+it), or set it as `CLOUDFLARE_API_TOKEN`. Then:
 
 ```sh
-export CLOUDFLARE_API_TOKEN=...   # the admin token, not the read-only one
 npm run setup-access -- you@example.com
 npm run deploy
 ```
@@ -143,7 +189,7 @@ Open the workers.dev URL, sign in, and the dashboard loads.
 
 Access is decided in two places, the Access policy and the Worker's `ALLOWED_EMAILS` secret,
 and someone has to be in both to see anything. `npm run admins` keeps them in step, treating the Access
-policy as the source of truth. It uses the same admin `CLOUDFLARE_API_TOKEN` as step 4.
+policy as the source of truth. It uses the same admin token (`.admin-token`) as step 4.
 
 ```sh
 npm run admins                                   # who has access

@@ -1,5 +1,6 @@
 # Secrets and local config: never commit.
 .dev.vars
+.admin-token
 .env
 wrangler.jsonc
 node_modules/

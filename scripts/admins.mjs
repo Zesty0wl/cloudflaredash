@@ -11,10 +11,12 @@
 //   npm run admins -- remove you@example.com
 //   npm run admins -- sync                 copy the policy to the secret again
 //
-// Needs CLOUDFLARE_API_TOKEN: an account API token with "Access: Apps and Policies: Edit" and
-// "Workers Scripts: Edit". Reads the account, Worker name and Access AUD from wrangler.jsonc.
+// Needs an account API token with "Access: Apps and Policies: Edit", "Access: Organizations,
+// Identity Providers, and Groups: Edit" and "Workers Scripts: Edit", saved in .admin-token (which
+// git ignores) or set as CLOUDFLARE_API_TOKEN. Reads the account, Worker name and Access AUD from
+// wrangler.jsonc.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const API = "https://api.cloudflare.com/client/v4";
@@ -43,6 +45,7 @@ export function parseJSONC(text) {
 }
 
 const WRANGLER = fileURLToPath(new URL("../wrangler.jsonc", import.meta.url));
+const ADMIN_TOKEN = fileURLToPath(new URL("../.admin-token", import.meta.url));
 const placeholder = (value) => !value || /^YOUR_/.test(value) || value.startsWith("YOUR_TEAM");
 
 function config({ needAud = true } = {}) {
@@ -56,8 +59,9 @@ function config({ needAud = true } = {}) {
   const aud = wrangler.vars?.ACCESS_AUD;
   if (placeholder(account) || !wrangler.name) fail("wrangler.jsonc needs name and account_id.");
   if (needAud && placeholder(aud)) fail("wrangler.jsonc has no vars.ACCESS_AUD yet. Run `npm run setup-access -- you@example.com` first.");
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  if (!token) fail('Set CLOUDFLARE_API_TOKEN to a token with "Access: Apps and Policies: Edit", "Access: Organizations, Identity Providers, and Groups: Edit" and "Workers Scripts: Edit".');
+  // A file keeps the token out of the shell environment, where Wrangler would pick it up too.
+  const token = (existsSync(ADMIN_TOKEN) ? readFileSync(ADMIN_TOKEN, "utf8").trim() : "") || process.env.CLOUDFLARE_API_TOKEN;
+  if (!token) fail('Save an API token with "Access: Apps and Policies: Edit", "Access: Organizations, Identity Providers, and Groups: Edit" and "Workers Scripts: Edit" in .admin-token (or set CLOUDFLARE_API_TOKEN).');
   return { account, aud, script: wrangler.name, token };
 }
 
