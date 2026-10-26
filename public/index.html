@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Cloudflare usage</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Cloudflare usage</h1>
+      <p class="sub" id="period">Workers Paid plan</p>
+    </div>
+    <div class="actions" id="actions" hidden>
+      <span class="muted" id="updated"></span>
+      <button type="button" id="refresh">Refresh</button>
+      <a class="quiet button" id="sign-out" href="/cdn-cgi/access/logout">Sign out</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="signed-out" class="card notice" hidden>
+      <h2>Signed out</h2>
+      <p>Your Cloudflare Access session has ended. Reload the page to sign in again.</p>
+      <button type="button" id="reload">Reload</button>
+    </section>
+
+    <p id="loading" class="muted" hidden>Loading usage…</p>
+    <div id="problems" class="problems" role="status" hidden></div>
+    <div id="dashboard" hidden></div>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+</body>
+</html>

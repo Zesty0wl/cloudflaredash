@@ -1,0 +1,21 @@
+{
+  "name": "cloudflaredash",
+  "version": "1.0.0",
+  "description": "A private dashboard of your Cloudflare account's usage against the Workers Paid plan's allowances, behind Cloudflare Access.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local-upstream localhost:8787",
+    "deploy": "wrangler deploy",
+    "test": "node --test 'test/*.test.js'",
+    "setup-access": "node scripts/admins.mjs setup",
+    "admins": "node scripts/admins.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

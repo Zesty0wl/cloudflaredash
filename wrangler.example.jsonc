@@ -1,0 +1,39 @@
+{
+  // Copy this file to wrangler.jsonc (which git ignores) and fill in your own values.
+  // The README walks through each one.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudflaredash",
+  // Your Cloudflare account ID (dashboard: Account home > the account's menu > Copy account ID).
+  "account_id": "YOUR_ACCOUNT_ID",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  // Served at https://cloudflaredash.<your-subdomain>.workers.dev. `npm run setup-access` puts every
+  // URL of this Worker behind Cloudflare Access, so nobody sees it without signing in.
+  "workers_dev": true,
+  // Version preview URLs aren't needed for a dashboard; leave them off.
+  "preview_urls": false,
+  // Optional: serve it on your own domain too (the domain must be on this Cloudflare account).
+  // Worker-level Access covers custom domains as well. To use only the custom domain, also set
+  // "workers_dev" to false.
+  // "routes": [
+  //   { "pattern": "usage.example.com", "custom_domain": true }
+  // ],
+  // The dashboard page: static files, served free without running the Worker.
+  // Anything that isn't a file (/api/usage) falls through to the Worker.
+  "assets": { "directory": "./public", "not_found_handling": "none" },
+  "vars": {
+    // The account whose usage the dashboard shows (usually the same as account_id).
+    "ACCOUNT_ID": "YOUR_ACCOUNT_ID",
+    // The day of the month your Workers Paid subscription renews (Billing > Subscriptions).
+    "BILLING_ANCHOR_DAY": "1",
+    // Cloudflare Access: your Zero Trust team domain and the Application Audience (AUD) tag of the
+    // Access application that protects this Worker. `npm run setup-access` fills both in.
+    "ACCESS_TEAM_DOMAIN": "YOUR_TEAM.cloudflareaccess.com",
+    "ACCESS_AUD": "YOUR_ACCESS_APPLICATION_AUD"
+  },
+  // Secrets, set with wrangler (never in this file):
+  //   CF_API_TOKEN    a read-only API token for the analytics (README: "API token")
+  //   ALLOWED_EMAILS  who may see the dashboard, checked again behind Access. Manage it with
+  //                   `npm run admins`, or set it by hand: comma-separated addresses or "@domain.com".
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

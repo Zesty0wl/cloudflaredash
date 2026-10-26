@@ -1,0 +1,5 @@
+# Copy to .dev.vars (which git ignores) for `npm run dev`.
+# A read-only API token for the analytics (see the README's "API token" section).
+CF_API_TOKEN=
+# wrangler dev has no Cloudflare Access in front of it: skip the check, on localhost only.
+DEV_SKIP_ACCESS=true

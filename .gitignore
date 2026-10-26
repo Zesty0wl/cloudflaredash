@@ -1,0 +1,7 @@
+# Secrets and local config: never commit.
+.dev.vars
+.env
+wrangler.jsonc
+node_modules/
+.wrangler/
+.DS_Store
